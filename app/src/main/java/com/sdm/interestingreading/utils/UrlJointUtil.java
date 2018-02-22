@@ -9,14 +9,12 @@ import java.util.Set;
 
 public class UrlJointUtil {
     public static String getUrl(String baseUrl, Map<String, String> map) {
-        String url = null;
+        String url = baseUrl
+                + "?showapi_appid=" + BaseData.SHOWAPI_APPID
+                + "&showapi_sign=" + BaseData.SHOWAPI_SIGN;
         boolean b = true;
         Set<Map.Entry<String, String>> set = map.entrySet();
         for (Map.Entry<String, String> data : set) {
-            if (b) {
-                b = false;
-                url = baseUrl + "?" + data.getKey() + "=" + data.getValue();
-            }else
                 url = url + "&" + data.getKey() + "=" + data.getValue();
         }
         return url;

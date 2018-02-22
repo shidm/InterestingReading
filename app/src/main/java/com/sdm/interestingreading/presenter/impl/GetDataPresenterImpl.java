@@ -1,8 +1,10 @@
 package com.sdm.interestingreading.presenter.impl;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.sdm.interestingreading.model.BaseData;
+import com.sdm.interestingreading.utils.BaseData;
 import com.sdm.interestingreading.model.IGetData;
 import com.sdm.interestingreading.model.impl.GetDataImpl;
 import com.sdm.interestingreading.model.pojo.AudioEntity;
@@ -11,6 +13,7 @@ import com.sdm.interestingreading.model.pojo.TextEntity;
 import com.sdm.interestingreading.model.pojo.VideoEntity;
 import com.sdm.interestingreading.presenter.IGetDataPresenter;
 import com.sdm.interestingreading.presenter.MyCallBack;
+import com.sdm.interestingreading.utils.ParseUtil;
 import com.sdm.interestingreading.utils.UrlJointUtil;
 import com.sdm.interestingreading.view.BaseInterface;
 import com.sdm.interestingreading.view.IAudioFragment;
@@ -21,6 +24,8 @@ import com.sdm.interestingreading.view.IVideoFragment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by shidongming on 18-2-22.
@@ -37,27 +42,35 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
     }
 
     @Override
-    public void getTextData(){
+    public void getTextData(String page){
         Map<String,String> map = new HashMap<>();
-        iGetData.getTextData(UrlJointUtil.getUrl(BaseData.TEXT_URL,map),this);
+        map.put("type","29");
+        map.put("page",page);
+        iGetData.getTextData(UrlJointUtil.getUrl(BaseData.URL,map),this);
     }
 
     @Override
-    public void getVideoData(){
+    public void getVideoData(String page){
         Map<String,String> map = new HashMap<>();
-        iGetData.getVideoData(UrlJointUtil.getUrl(BaseData.VIDEO_URL,map),this);
+        map.put("type","41");
+        map.put("page",page);
+        iGetData.getVideoData(UrlJointUtil.getUrl(BaseData.URL,map),this);
     }
 
     @Override
-    public void getAudioData(){
+    public void getAudioData(String page){
         Map<String,String> map = new HashMap<>();
-        iGetData.getAudioData(UrlJointUtil.getUrl(BaseData.AUDIO_URL,map),this);
+        map.put("type","31");
+        map.put("page",page);
+        iGetData.getAudioData(UrlJointUtil.getUrl(BaseData.URL,map),this);
     }
 
     @Override
-    public void getPictureData(){
+    public void getPictureData(String page){
         Map<String,String> map = new HashMap<>();
-        iGetData.getPictureData(UrlJointUtil.getUrl(BaseData.PICTURE_URL,map),this);
+        map.put("type","10");
+        map.put("page",page);
+        iGetData.getPictureData(UrlJointUtil.getUrl(BaseData.URL,map),this);
     }
 
     @Override
@@ -80,9 +93,9 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
 
                 break;
             case "图片":
-                List<PictureEntity> pictureEntityList = gson.fromJson(data,new TypeToken<List<PictureEntity>>(){}.getType());
-                IPictureFragment iPictureFragment = (IPictureFragment) i;
-
+                Log.d(TAG, data);
+                List<PictureEntity> pictureEntityList = gson.fromJson(ParseUtil.parse(data),new TypeToken<List<PictureEntity>>(){}.getType());
+                ((IPictureFragment) i).update(pictureEntityList);
                 break;
             default:
                 break;

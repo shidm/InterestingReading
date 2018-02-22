@@ -5,8 +5,8 @@ package com.sdm.interestingreading.presenter;
  */
 
 public interface IGetDataPresenter {
-    void getTextData();
-    void getVideoData();
-    void getAudioData();
-    void getPictureData();
+    void getTextData(String page);
+    void getVideoData(String page);
+    void getAudioData(String page);
+    void getPictureData(String page);
 }

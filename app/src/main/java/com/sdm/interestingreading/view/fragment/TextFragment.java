@@ -72,11 +72,6 @@ public class TextFragment extends Fragment implements ITextFragment {
                 return false;
             }
         });
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         addData();
         IGetDataPresenter presenter = new GetDataPresenterImpl(this);
     }

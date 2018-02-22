@@ -1,6 +1,5 @@
 package com.sdm.interestingreading.model.impl;
 
-import com.sdm.interestingreading.model.BaseData;
 import com.sdm.interestingreading.model.IGetData;
 import com.sdm.interestingreading.presenter.MyCallBack;
 import com.sdm.interestingreading.utils.NetworkRequest;
