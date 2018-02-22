@@ -1,7 +1,13 @@
 package com.sdm.interestingreading.view.activity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
+import android.os.Build;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -33,8 +39,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     private float floatOffset = 0;
     private int whichPosition = 0;
 
-    private int lastX,lastY;
-    private static int TAB_MARGIN_DIP = 70;
+    private static final String PERMISSIONS[] = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private static final int PERMISSION_CODE = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +48,17 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
+        checkPermissions();
         init();
     }
 
-
+    private void checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this,PERMISSIONS[0]) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,PERMISSIONS,PERMISSION_CODE);
+            }
+        }
+    }
 
     private void init() {
         toolbar = findViewById(R.id.toolar);

@@ -12,14 +12,17 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.sdm.interestingreading.R;
+import com.sdm.interestingreading.presenter.IGetDataPresenter;
 import com.sdm.interestingreading.presenter.adapter.RecyclerAdapter;
 import com.sdm.interestingreading.model.pojo.TextEntity;
+import com.sdm.interestingreading.presenter.impl.GetDataPresenterImpl;
+import com.sdm.interestingreading.view.ITextFragment;
 import com.sdm.interestingreading.view.activity.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextFragment extends Fragment {
+public class TextFragment extends Fragment implements ITextFragment {
 
     private View view;
     private RecyclerView recyclerView;
@@ -75,6 +78,7 @@ public class TextFragment extends Fragment {
             e.printStackTrace();
         }
         addData();
+        IGetDataPresenter presenter = new GetDataPresenterImpl(this);
     }
 
     private void addData() {
