@@ -127,24 +127,24 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Override
     public void onPageSelected(int position) {
-        viewPager.setCurrentItem(position);
-        switch (position) {
-            case 0:
-
-                break;
-            case 1:
-
-                break;
-            case 2:
-
-                break;
-
-            case 3:
-
-                break;
-            default:
-                break;
-        }
+//        viewPager.setCurrentItem(position);
+//        switch (position) {
+//            case 0:
+//
+//                break;
+//            case 1:
+//
+//                break;
+//            case 2:
+//
+//                break;
+//
+//            case 3:
+//
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     @Override
