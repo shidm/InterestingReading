@@ -6,13 +6,21 @@ package com.sdm.interestingreading.utils;
 
 public final class BaseData {
 
-    //段子
-    public static final String URL = "http://route.showapi.com/255-1";
+    //内容
+    public static final String CONTENT_URL = "http://api.budejie.com/api/api_open.php?a=list&c=data";
 
-    //appid
-    public static final String SHOWAPI_APPID = "57349";
+    //评论
+    public static final String COMMENT_URL = "http://api.budejie.com/api/api_open.php?a=dataList&c=comment";
 
-    //sign
-    public static final String SHOWAPI_SIGN = "237d13c41f5648b08a9a2a4e00bbfc08";
+    //页数
+    public static String page = "&page=";
+
+    //类型
+    public static String type = "&type=";
+
+    //内容id
+    public static String data_id = "&data_id=";
+
+
 
 }

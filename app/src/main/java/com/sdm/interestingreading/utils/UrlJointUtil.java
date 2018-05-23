@@ -9,10 +9,7 @@ import java.util.Set;
 
 public class UrlJointUtil {
     public static String getUrl(String baseUrl, Map<String, String> map) {
-        String url = baseUrl
-                + "?showapi_appid=" + BaseData.SHOWAPI_APPID
-                + "&showapi_sign=" + BaseData.SHOWAPI_SIGN;
-        boolean b = true;
+        String url = baseUrl;
         Set<Map.Entry<String, String>> set = map.entrySet();
         for (Map.Entry<String, String> data : set) {
                 url = url + "&" + data.getKey() + "=" + data.getValue();

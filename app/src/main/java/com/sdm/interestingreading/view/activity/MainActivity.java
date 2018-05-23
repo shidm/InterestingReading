@@ -3,10 +3,13 @@ package com.sdm.interestingreading.view.activity;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +19,19 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.ashokvarma.bottomnavigation.BadgeItem;
+import com.ashokvarma.bottomnavigation.BottomNavigationBar;
+import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.sdm.interestingreading.R;
 import com.sdm.interestingreading.presenter.adapter.ViewpagerAdapter;
+import com.sdm.interestingreading.utils.NetworkRequest;
 import com.sdm.interestingreading.view.fragment.AudioFragment;
+import com.sdm.interestingreading.view.fragment.ContentFragment;
+import com.sdm.interestingreading.view.fragment.PersonCenterFragment;
 import com.sdm.interestingreading.view.fragment.PictureFragment;
 import com.sdm.interestingreading.view.fragment.TextFragment;
 import com.sdm.interestingreading.view.fragment.VideoFragment;
@@ -27,20 +39,17 @@ import com.sdm.interestingreading.view.fragment.VideoFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationBar.OnTabSelectedListener {
 
     private static final String TAG = "MainActivity-->";
-    private Toolbar toolbar;
-    public static ViewPager viewPager;
-    private View scrollView;
-    private List<Fragment> list = new ArrayList<>();
-    private float offset = 0;
-    private float lastEndPosition = 0;
-    private float floatOffset = 0;
-    private int whichPosition = 0;
+
+    private static List<Fragment> fragments = new ArrayList<>();
 
     private static final String PERMISSIONS[] = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final int PERMISSION_CODE = 123;
+
+    public static FrameLayout layout;
+    public static RelativeLayout mainLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +57,66 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
+        mainLayout = findViewById(R.id.main_layout);
+
+        layout = findViewById(R.id.frag_layout);
+
         checkPermissions();
-        init();
+
+        BottomNavigationBar bottomNavigationBar = (BottomNavigationBar) findViewById(R.id.bottom_navigation_bar);
+        bottomNavigationBar.setMode(BottomNavigationBar.MODE_FIXED);
+        bottomNavigationBar
+                .setBackgroundStyle(BottomNavigationBar.BACKGROUND_STYLE_STATIC
+                );
+//        BadgeItem numberBadgeItem = new BadgeItem()
+//                .setBorderWidth(4)
+//                .setBackgroundColor(Color.RED)
+//                .setText("5")
+//                .setHideOnSelect(true);
+        bottomNavigationBar.addItem(new BottomNavigationItem(R.drawable.content, "内容").setActiveColorResource(R.color.title))
+                .addItem(new BottomNavigationItem(R.drawable.my, "我的").setActiveColorResource(R.color.title))
+                .setFirstSelectedPosition(0)
+                .initialise();
+
+        fragments = getFragments();
+        for (int i = 0; i < fragments.size(); i++) {
+            if (!fragments.get(i).isAdded()) {
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.add(R.id.layFrame, fragments.get(i));
+                transaction.commit();
+            }
+        }
+        setDefaultFragment();
+        bottomNavigationBar.setTabSelectedListener(this);
+    }
+
+    /**
+     * 设置默认的
+     */
+    private void setDefaultFragment() {
+        hide(0, getSupportFragmentManager().beginTransaction());
+    }
+
+    private ArrayList<Fragment> getFragments() {
+        ArrayList<Fragment> fragments = new ArrayList<>();
+        fragments.add(ContentFragment.newInstance("内容"));
+        fragments.add(PersonCenterFragment.newInstance("我的"));
+        return fragments;
+    }
+
+    @Override
+    public void onTabSelected(int position) {
+        hide(position, getSupportFragmentManager().beginTransaction());
+
+    }
+
+    @Override
+    public void onTabUnselected(int position) {
+    }
+
+    @Override
+    public void onTabReselected(int position) {
+
     }
 
     private void checkPermissions() {
@@ -60,95 +127,13 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         }
     }
 
-    private void init() {
-        toolbar = findViewById(R.id.toolar);
-        toolbar.setMinimumHeight(getStatusBarHeight());
-        setSupportActionBar(toolbar);
-
-        scrollView = findViewById(R.id.floatscrollview);
-        offset = getWindowWidth() / 8 - scrollView.getLayoutParams().width / 2;
-        setScrollViewPosition((int) offset);
-
-        list.add(new TextFragment());
-        list.add(new PictureFragment());
-        list.add(new VideoFragment());
-        list.add(new AudioFragment());
-
-        viewPager = findViewById(R.id.viewpager);
-        ViewpagerAdapter adapter = new ViewpagerAdapter(getSupportFragmentManager(), list);
-        viewPager.setAdapter(adapter);
-        viewPager.setOffscreenPageLimit(3);
-        viewPager.addOnPageChangeListener(this);
-    }
-
-    private int getWindowWidth() {
-        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
-        return metrics.widthPixels;
-    }
-
-    private void setScrollViewPosition(int positionXY) {
-        AppBarLayout.MarginLayoutParams layoutParams = new AppBarLayout.MarginLayoutParams(scrollView.getLayoutParams());
-        layoutParams.leftMargin = positionXY;
-        scrollView.setLayoutParams(new AppBarLayout.LayoutParams(layoutParams));
-    }
-
-    //获取状态栏高度
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
+    private void hide(int a, FragmentTransaction t){
+        Log.d(TAG, "hide: "+a);
+        for (int i = 0; i<fragments.size(); i++) {
+            Log.d(TAG, "hide: position"+i);
+            t.hide(fragments.get(i));
         }
-        return result;
-    }
-
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        Log.d(TAG, "onPageScrolled: " + position + "\tpositionOffset：" + positionOffset);
-        if (whichPosition == position) {
-            floatOffset = positionOffset * getWindowWidth() / 4
-                    + offset
-                    + getWindowWidth() * position / 4;
-            Log.d(TAG, "floatOffset: " + floatOffset);
-            setScrollViewPosition((int) floatOffset);
-            if (floatOffset > getWindowWidth() / 4) {
-                setTittleColor(1);
-            } else {
-                setTittleColor(0);
-            }
-        } else {
-            whichPosition = position;
-            lastEndPosition = floatOffset;
-        }
-    }
-
-    private void setTittleColor(int i) {
-    }
-
-    @Override
-    public void onPageSelected(int position) {
-//        viewPager.setCurrentItem(position);
-//        switch (position) {
-//            case 0:
-//
-//                break;
-//            case 1:
-//
-//                break;
-//            case 2:
-//
-//                break;
-//
-//            case 3:
-//
-//                break;
-//            default:
-//                break;
-//        }
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
+        t.show(fragments.get(a));
+        t.commit();
     }
 }

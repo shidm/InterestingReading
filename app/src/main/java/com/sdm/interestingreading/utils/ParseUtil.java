@@ -9,14 +9,15 @@ import org.json.JSONObject;
 
 public class ParseUtil {
 
-    public static String parse(String data){
+    public static String parseContent(String data){
         try {
             JSONObject jsonObject = new JSONObject(data);
-            data = jsonObject.getString("showapi_res_body");
-            jsonObject = new JSONObject(data);
-            data = jsonObject.getString("pagebean");
-            jsonObject = new JSONObject(data);
-            data = jsonObject.getString("contentlist");
+            String info = jsonObject.getString("info");
+            String list = jsonObject.getString("list");
+            jsonObject = new JSONObject(info);
+            String count = jsonObject.getString("count");
+            String page = jsonObject.getString("page");
+            data = list;
         } catch (JSONException e) {
             e.printStackTrace();
         }

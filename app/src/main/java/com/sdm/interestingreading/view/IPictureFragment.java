@@ -10,4 +10,5 @@ import java.util.List;
 
 public interface IPictureFragment extends BaseInterface {
     void update(List<PictureEntity> list);
+    void showDetailPicture(PictureEntity pictureEntity);
 }

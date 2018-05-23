@@ -46,7 +46,7 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
         Map<String,String> map = new HashMap<>();
         map.put("type","29");
         map.put("page",page);
-        iGetData.getTextData(UrlJointUtil.getUrl(BaseData.URL,map),this);
+        iGetData.getTextData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
         Map<String,String> map = new HashMap<>();
         map.put("type","41");
         map.put("page",page);
-        iGetData.getVideoData(UrlJointUtil.getUrl(BaseData.URL,map),this);
+        iGetData.getVideoData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
         Map<String,String> map = new HashMap<>();
         map.put("type","31");
         map.put("page",page);
-        iGetData.getAudioData(UrlJointUtil.getUrl(BaseData.URL,map),this);
+        iGetData.getAudioData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
         Map<String,String> map = new HashMap<>();
         map.put("type","10");
         map.put("page",page);
-        iGetData.getPictureData(UrlJointUtil.getUrl(BaseData.URL,map),this);
+        iGetData.getPictureData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
     }
 
     @Override
@@ -78,23 +78,25 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
         Gson gson = new Gson();
         switch (which) {
             case "段子":
-                List<TextEntity> textEntityList = gson.fromJson(data,new TypeToken<List<TextEntity>>(){}.getType());
+                List<TextEntity> textEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<TextEntity>>(){}.getType());
+                Log.d(TAG, "call: "+textEntityList.size());
                 ITextFragment iTextFragment = (ITextFragment) i;
 
+                iTextFragment.update(textEntityList);
                 break;
             case "视频":
-                List<VideoEntity> videoEntityList = gson.fromJson(data,new TypeToken<List<VideoEntity>>(){}.getType());
+                List<VideoEntity> videoEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<VideoEntity>>(){}.getType());
                 IVideoFragment iVideoFragment = (IVideoFragment) i;
-
+                iVideoFragment.update(videoEntityList);
                 break;
             case "声音":
-                List<AudioEntity> audioEntityList = gson.fromJson(data,new TypeToken<List<AudioEntity>>(){}.getType());
+                List<AudioEntity> audioEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<AudioEntity>>(){}.getType());
                 IAudioFragment iAudioFragment = (IAudioFragment) i;
-
+                iAudioFragment.update(audioEntityList);
                 break;
             case "图片":
                 Log.d(TAG, data);
-                List<PictureEntity> pictureEntityList = gson.fromJson(ParseUtil.parse(data),new TypeToken<List<PictureEntity>>(){}.getType());
+                List<PictureEntity> pictureEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<PictureEntity>>(){}.getType());
                 ((IPictureFragment) i).update(pictureEntityList);
                 break;
             default:

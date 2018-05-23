@@ -1,11 +1,18 @@
 package com.sdm.interestingreading.view.fragment;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +23,7 @@ import com.sdm.interestingreading.presenter.IGetDataPresenter;
 import com.sdm.interestingreading.presenter.adapter.RecyclerAdapter;
 import com.sdm.interestingreading.model.pojo.TextEntity;
 import com.sdm.interestingreading.presenter.impl.GetDataPresenterImpl;
+import com.sdm.interestingreading.utils.NetworkRequest;
 import com.sdm.interestingreading.view.ITextFragment;
 import com.sdm.interestingreading.view.activity.MainActivity;
 
@@ -29,6 +37,17 @@ public class TextFragment extends Fragment implements ITextFragment {
     private RecyclerAdapter adapter;
     private int lastX,lastY;
     private List<TextEntity> list = new ArrayList();
+    private FloatingActionButton jumpFirstBtn;
+    private static boolean isJumpToFirstShow = false;
+
+    private int page = 1;
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            adapter.notifyDataSetChanged();
+        }
+    };
 
     @Nullable
     @Override
@@ -40,7 +59,15 @@ public class TextFragment extends Fragment implements ITextFragment {
 
     private void init() {
         LinearLayoutManager manager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        adapter = new RecyclerAdapter<TextEntity>(getContext(), list, "段子");
+        adapter = new RecyclerAdapter<TextEntity>(getContext(), list, "段子", this);
+
+        jumpFirstBtn = view.findViewById(R.id.jump_First);
+        jumpFirstBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                recyclerView.smoothScrollToPosition(0);
+            }
+        });
 
         recyclerView = view.findViewById(R.id.textrecycler);
         recyclerView.setLayoutManager(manager);
@@ -55,13 +82,13 @@ public class TextFragment extends Fragment implements ITextFragment {
                 int y = (int) event.getY();
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        MainActivity.viewPager.requestDisallowInterceptTouchEvent(true);
+                        ContentFragment.viewPager.requestDisallowInterceptTouchEvent(true);
                         break;
                     case MotionEvent.ACTION_MOVE:
                         int deltaX = x-lastX;
                         int deltaY = y-lastY;
                         if(Math.abs(deltaX)>Math.abs(deltaY)){
-                            MainActivity.viewPager.requestDisallowInterceptTouchEvent(false);
+                            ContentFragment.viewPager.requestDisallowInterceptTouchEvent(false);
                         }
                         break;
                     case MotionEvent.ACTION_UP:
@@ -72,16 +99,78 @@ public class TextFragment extends Fragment implements ITextFragment {
                 return false;
             }
         });
-        addData();
         IGetDataPresenter presenter = new GetDataPresenterImpl(this);
+        presenter.getTextData(String.valueOf(page));
+
+        final IGetDataPresenter p = presenter;
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                //判断是当前layoutManager是否为LinearLayoutManager
+                // 只有LinearLayoutManager才有查找第一个和最后一个可见view位置的方法
+                if (layoutManager instanceof LinearLayoutManager) {
+                    LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
+                    //获取最后一个可见view的位置
+                    int lastItemPosition = linearManager.findLastVisibleItemPosition();
+                    //获取第一个可见view的位置
+                    int firstItemPosition = linearManager.findFirstVisibleItemPosition();
+                    int refrushPosition = list.size() - 5;
+                    if (lastItemPosition >= 7 && !isJumpToFirstShow) {
+                        jumpFirstBtn.setVisibility(View.VISIBLE);
+                        ObjectAnimator.ofFloat(jumpFirstBtn, "translationX", dp2px(getContext(), 80), 0)
+                                .setDuration(300)
+                                .start();
+                        isJumpToFirstShow = true;
+                    } else if (lastItemPosition < 7 && isJumpToFirstShow){
+                        isJumpToFirstShow = false;
+                        ObjectAnimator animator = ObjectAnimator.ofFloat(jumpFirstBtn, "translationX", 0, dp2px(getContext(), 80));
+                        animator.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                jumpFirstBtn.setVisibility(View.GONE);
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animation) {
+
+                            }
+                        });
+                        animator.setDuration(300).start();
+
+                    }
+                    if (lastItemPosition >= refrushPosition) {
+                        p.getTextData(String.valueOf(++page));
+                    }
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
     }
 
-    private void addData() {
-        for (int i = 0; i < 70; i++) {
-            list.add(new TextEntity());
-        }
-        adapter.update(list);
+    @Override
+    public void update(List<TextEntity> list) {
+        this.list.addAll(list);
+        handler.sendMessage(Message.obtain());
     }
 
-
+    public static int dp2px(Context context, float dpValue) {
+        float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
 }
