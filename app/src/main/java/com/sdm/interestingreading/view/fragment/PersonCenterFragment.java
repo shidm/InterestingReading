@@ -31,13 +31,13 @@ public class PersonCenterFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_person, container, false);
 
         blurImageView = view.findViewById(R.id.iv_blur);
-        avatarImageView = view.findViewById(R.id.iv_avatar);
+        avatarImageView = view.findViewById(R.id.user_icon);
 
-        Glide.with(this).load(R.drawable.icon)
+        Glide.with(this).load(R.drawable.user_icon)
                 .bitmapTransform(new BlurTransformation(getContext(), 25), new CenterCrop(getContext()))
                 .into(blurImageView);
 
-        Glide.with(this).load(R.drawable.icon)
+        Glide.with(this).load(R.drawable.user_icon)
                 .bitmapTransform(new CropCircleTransformation(getContext()))
                 .into(avatarImageView);
         return view;

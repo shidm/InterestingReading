@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.sdm.interestingreading.model.pojo.CommentEntity;
 import com.sdm.interestingreading.utils.BaseData;
 import com.sdm.interestingreading.model.IGetData;
 import com.sdm.interestingreading.model.impl.GetDataImpl;
@@ -17,6 +18,7 @@ import com.sdm.interestingreading.utils.ParseUtil;
 import com.sdm.interestingreading.utils.UrlJointUtil;
 import com.sdm.interestingreading.view.BaseInterface;
 import com.sdm.interestingreading.view.IAudioFragment;
+import com.sdm.interestingreading.view.ICommentFragment;
 import com.sdm.interestingreading.view.IPictureFragment;
 import com.sdm.interestingreading.view.ITextFragment;
 import com.sdm.interestingreading.view.IVideoFragment;
@@ -31,7 +33,7 @@ import static android.content.ContentValues.TAG;
  * Created by shidongming on 18-2-22.
  */
 
-public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
+public class GetDataPresenterImpl implements IGetDataPresenter, MyCallBack {
 
     private IGetData iGetData;
     private BaseInterface i;
@@ -42,35 +44,43 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
     }
 
     @Override
-    public void getTextData(String page){
-        Map<String,String> map = new HashMap<>();
-        map.put("type","29");
-        map.put("page",page);
-        iGetData.getTextData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
+    public void getTextData(String page) {
+        Map<String, String> map = new HashMap<>();
+        map.put("type", "29");
+        map.put("page", page);
+        iGetData.getTextData(UrlJointUtil.getUrl(BaseData.CONTENT_URL, map), this);
     }
 
     @Override
-    public void getVideoData(String page){
-        Map<String,String> map = new HashMap<>();
-        map.put("type","41");
-        map.put("page",page);
-        iGetData.getVideoData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
+    public void getVideoData(String page) {
+        Map<String, String> map = new HashMap<>();
+        map.put("type", "41");
+        map.put("page", page);
+        iGetData.getVideoData(UrlJointUtil.getUrl(BaseData.CONTENT_URL, map), this);
     }
 
     @Override
-    public void getAudioData(String page){
-        Map<String,String> map = new HashMap<>();
-        map.put("type","31");
-        map.put("page",page);
-        iGetData.getAudioData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
+    public void getAudioData(String page) {
+        Map<String, String> map = new HashMap<>();
+        map.put("type", "31");
+        map.put("page", page);
+        iGetData.getAudioData(UrlJointUtil.getUrl(BaseData.CONTENT_URL, map), this);
     }
 
     @Override
-    public void getPictureData(String page){
-        Map<String,String> map = new HashMap<>();
-        map.put("type","10");
-        map.put("page",page);
-        iGetData.getPictureData(UrlJointUtil.getUrl(BaseData.CONTENT_URL,map),this);
+    public void getPictureData(String page) {
+        Map<String, String> map = new HashMap<>();
+        map.put("type", "10");
+        map.put("page", page);
+        iGetData.getPictureData(UrlJointUtil.getUrl(BaseData.CONTENT_URL, map), this);
+    }
+
+    @Override
+    public void getCommentData(String page, String data_id) {
+        Map<String, String> map = new HashMap<>();
+        map.put("data_id", data_id);
+        map.put("page", page);
+        iGetData.getCommentData(UrlJointUtil.getUrl(BaseData.COMMENT_URL, map), this);
     }
 
     @Override
@@ -78,26 +88,38 @@ public class GetDataPresenterImpl implements IGetDataPresenter,MyCallBack {
         Gson gson = new Gson();
         switch (which) {
             case "段子":
-                List<TextEntity> textEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<TextEntity>>(){}.getType());
-                Log.d(TAG, "call: "+textEntityList.size());
+                List<TextEntity> textEntityList = gson.fromJson(ParseUtil.parseContent(data), new TypeToken<List<TextEntity>>() {
+                }.getType());
+                Log.d(TAG, "call: " + textEntityList.size());
                 ITextFragment iTextFragment = (ITextFragment) i;
 
                 iTextFragment.update(textEntityList);
                 break;
             case "视频":
-                List<VideoEntity> videoEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<VideoEntity>>(){}.getType());
+                List<VideoEntity> videoEntityList = gson.fromJson(ParseUtil.parseContent(data), new TypeToken<List<VideoEntity>>() {
+                }.getType());
                 IVideoFragment iVideoFragment = (IVideoFragment) i;
                 iVideoFragment.update(videoEntityList);
                 break;
             case "声音":
-                List<AudioEntity> audioEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<AudioEntity>>(){}.getType());
+                List<AudioEntity> audioEntityList = gson.fromJson(ParseUtil.parseContent(data), new TypeToken<List<AudioEntity>>() {
+                }.getType());
                 IAudioFragment iAudioFragment = (IAudioFragment) i;
                 iAudioFragment.update(audioEntityList);
                 break;
             case "图片":
                 Log.d(TAG, data);
-                List<PictureEntity> pictureEntityList = gson.fromJson(ParseUtil.parseContent(data),new TypeToken<List<PictureEntity>>(){}.getType());
+                List<PictureEntity> pictureEntityList = gson.fromJson(ParseUtil.parseContent(data), new TypeToken<List<PictureEntity>>() {
+                }.getType());
                 ((IPictureFragment) i).update(pictureEntityList);
+                break;
+            case "评论":
+                String[] strings = ParseUtil.parseComment(data);
+                Log.d(TAG, "评论: "+strings[1]);
+                List<CommentEntity> commentEntityList = gson.fromJson(strings[1], new TypeToken<List<CommentEntity>>() {
+                }.getType());
+                ICommentFragment iCommentFragment = (ICommentFragment) i;
+                iCommentFragment.update(commentEntityList, strings[0]);
                 break;
             default:
                 break;

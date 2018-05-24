@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -39,6 +40,7 @@ public class TextFragment extends Fragment implements ITextFragment {
     private List<TextEntity> list = new ArrayList();
     private FloatingActionButton jumpFirstBtn;
     private static boolean isJumpToFirstShow = false;
+    public static CommentFragment commentFragment;
 
     private int page = 1;
 
@@ -172,5 +174,15 @@ public class TextFragment extends Fragment implements ITextFragment {
     public static int dp2px(Context context, float dpValue) {
         float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+    @Override
+    public void showComment(String which, String data_id, String usericon) {
+        commentFragment = CommentFragment.newInstance(which, data_id, usericon);
+        MainActivity.layout.setVisibility(View.VISIBLE);
+        MainActivity.mainLayout.setVisibility(View.GONE);
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.frag_layout, commentFragment);
+        transaction.commit();
     }
 }

@@ -30,4 +30,9 @@ public class GetDataImpl implements IGetData {
         NetworkRequest.getData(url, "图片", back);
     }
 
+    @Override
+    public void getCommentData(String url, MyCallBack back) {
+        NetworkRequest.getData(url, "评论", back);
+    }
+
 }

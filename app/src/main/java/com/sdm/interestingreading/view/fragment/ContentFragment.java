@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Created by WangChang on 2016/5/15.
  */
-public class ContentFragment extends Fragment implements ViewPager.OnPageChangeListener {
+public class ContentFragment extends Fragment implements ViewPager.OnPageChangeListener, View.OnClickListener {
 
     private static final String TAG = "ContentFragment";
     private Toolbar toolbar;
@@ -37,6 +37,8 @@ public class ContentFragment extends Fragment implements ViewPager.OnPageChangeL
     private AppBarLayout appBarLayout;
     private TextView title;
 
+    private TextView joke_tv, audio_tv, video_tv, picture_tv;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -46,6 +48,16 @@ public class ContentFragment extends Fragment implements ViewPager.OnPageChangeL
     }
 
     private void init(View view) {
+
+        joke_tv = view.findViewById(R.id.page_text);
+        audio_tv = view.findViewById(R.id.page_audio);
+        video_tv = view.findViewById(R.id.page_video);
+        picture_tv = view.findViewById(R.id.page_pic);
+        joke_tv.setOnClickListener(this);
+        audio_tv.setOnClickListener(this);
+        video_tv.setOnClickListener(this);
+        picture_tv.setOnClickListener(this);
+
         title = view.findViewById(R.id.app_title);
         appBarLayout = view.findViewById(R.id.appbar_layout);
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
@@ -136,5 +148,25 @@ public class ContentFragment extends Fragment implements ViewPager.OnPageChangeL
         ContentFragment fragment = new ContentFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.page_text:
+                viewPager.setCurrentItem(0);
+                break;
+            case R.id.page_audio:
+                viewPager.setCurrentItem(3);
+                break;
+            case R.id.page_video:
+                viewPager.setCurrentItem(2);
+                break;
+            case R.id.page_pic:
+                viewPager.setCurrentItem(1);
+                break;
+            default:
+                break;
+        }
     }
 }

@@ -10,4 +10,5 @@ import java.util.List;
 
 public interface IVideoFragment extends BaseInterface {
     void update(List<VideoEntity> list);
+    void showComment(String which, String data_id, String userIcon);
 }

@@ -35,6 +35,8 @@ public class PictureDetailFragment extends Fragment {
     private SubsamplingScaleImageView imageView;
     public static PictureEntity pictureEntity;
 
+    public static CommentFragment commentFragment;
+
     public static PictureDetailFragment newInstance(PictureEntity entity) {
         pictureEntity = entity;
         return new PictureDetailFragment();

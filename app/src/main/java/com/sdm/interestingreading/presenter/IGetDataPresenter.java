@@ -9,4 +9,5 @@ public interface IGetDataPresenter {
     void getVideoData(String page);
     void getAudioData(String page);
     void getPictureData(String page);
+    void getCommentData(String page, String data_id);
 }

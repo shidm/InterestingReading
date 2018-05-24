@@ -10,4 +10,5 @@ import java.util.List;
 
 public interface ITextFragment extends BaseInterface {
     void update(List<TextEntity> list);
+    void showComment(String which, String data_id, String userIcon);
 }

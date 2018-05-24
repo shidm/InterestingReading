@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -28,14 +29,19 @@ import android.widget.VideoView;
 import com.bumptech.glide.Glide;
 import com.sdm.interestingreading.R;
 import com.sdm.interestingreading.model.pojo.AudioEntity;
+import com.sdm.interestingreading.model.pojo.CommentEntity;
 import com.sdm.interestingreading.model.pojo.PictureEntity;
 import com.sdm.interestingreading.model.pojo.TextEntity;
 import com.sdm.interestingreading.model.pojo.VideoEntity;
 import com.sdm.interestingreading.view.BaseInterface;
+import com.sdm.interestingreading.view.IAudioFragment;
 import com.sdm.interestingreading.view.IPictureFragment;
+import com.sdm.interestingreading.view.ITextFragment;
+import com.sdm.interestingreading.view.IVideoFragment;
 import com.sdm.interestingreading.view.fragment.PictureDetailFragment;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -81,6 +87,10 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
             case "声音":
                 view = LayoutInflater.from(context).inflate(R.layout.item_audio, parent, false);
                 viewHolder = new AudioViewHolder(view);
+                break;
+            case "评论":
+                view = LayoutInflater.from(context).inflate(R.layout.item_comment, parent, false);
+                viewHolder = new CommentViewHolder(view);
                 break;
             default:
                 break;
@@ -130,6 +140,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                     @Override
                     public void onClick(View view) {
                         //跳转
+                        ((ITextFragment) back).showComment("段子", ((TextEntity) list.get(position)).getJoke_id(), ((TextEntity) list.get(position)).getUserIcon());
                     }
                 });
 
@@ -207,6 +218,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                     @Override
                     public void onClick(View view) {
                         //跳转
+                        ((IPictureFragment) back).showComment("图片", ((PictureEntity) list.get(position)).getPicture_id(), ((PictureEntity) list.get(position)).getUserIcon());
                     }
                 });
 
@@ -241,18 +253,23 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                     public void onClick(View view) {
                         if (h2.videoView.isPlaying()) {
                             h2.videoView.pause();
+                            h2.play.setImageResource(R.drawable.play);
+                            h2.play.setColorFilter(context.getResources().getColor(R.color.title));
                         } else {
+                            h2.play.setImageResource(R.drawable.stop);
+                            h2.play.setColorFilter(context.getResources().getColor(R.color.title));
                             if (h2.videoView.getCurrentPosition() != 0) {
                                 h2.videoView.start();
                             } else {
                                 h2.video_content_img.setVisibility(View.INVISIBLE);
                                 h2.videoView.setVisibility(View.VISIBLE);
                                 loadView(((VideoEntity) list.get(position)).getVideo_content_url(), h2.videoView, h2.video_seekbar
-                                        , h2.thisTime, h2.totalTime, h2.video_content_img);
+                                        , h2.thisTime, h2.totalTime, h2.video_content_img, h2.play);
                             }
                         }
                     }
                 });
+                h2.play.setColorFilter(context.getResources().getColor(R.color.title));
                 h2.like.setColorFilter(R.color.black);
                 h2.unlike.setColorFilter(R.color.black);
                 h2.like.setOnClickListener(new View.OnClickListener() {
@@ -279,6 +296,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                     @Override
                     public void onClick(View view) {
                         //跳转
+                        ((IVideoFragment) back).showComment("视频", ((VideoEntity) list.get(position)).getVideo_id(), ((VideoEntity) list.get(position)).getUserIcon());
                     }
                 });
 
@@ -290,6 +308,8 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                 });
                 break;
             case "声音":
+                final MediaPlayer mMediaPlayer = new MediaPlayer();
+
                 ((AudioViewHolder) holder).username.setText(((AudioEntity) list.get(position)).getUserName());
                 ((AudioViewHolder) holder).userCreateTime.setText(((AudioEntity) list.get(position)).getUserCreateTime());
                 ((AudioViewHolder) holder).audio_content.setText(((AudioEntity) list.get(position)).getAudio_content());
@@ -297,6 +317,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                 ((AudioViewHolder) holder).audio_unlike_num.setText(((AudioEntity) list.get(position)).getAudio_unlike_num());
                 ((AudioViewHolder) holder).audio_comment_num.setText(((AudioEntity) list.get(position)).getAudio_comment_num());
                 ((AudioViewHolder) holder).audio_time.setText(getTime(((AudioEntity) list.get(position)).getAudio_time()));
+                ((AudioViewHolder) holder).audio_this_time.setText("00:00");
                 if (!TextUtils.isEmpty(((AudioEntity) list.get(position)).getUserIcon())) {
                     Picasso.with(context).load(((AudioEntity) list.get(position)).getUserIcon())
                             .placeholder(R.drawable.wait)
@@ -308,6 +329,24 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                         .into(((AudioViewHolder) holder).audio_content_img);
                 final AudioViewHolder h3 = (AudioViewHolder) holder;
 
+                h3.play.setColorFilter(context.getResources().getColor(R.color.title));
+                h3.play.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (mMediaPlayer.isPlaying()) {
+                            mMediaPlayer.pause();
+                            h3.play.setImageResource(R.drawable.play);
+                            h3.play.setColorFilter(context.getResources().getColor(R.color.title));
+                        } else {
+                            h3.play.setImageResource(R.drawable.stop);
+                            h3.play.setColorFilter(context.getResources().getColor(R.color.title));
+                            if (!"00:00".equals(h3.audio_this_time.getText().toString().trim())) {
+                                mMediaPlayer.start();
+                            } else
+                                loadAudio(((AudioEntity) list.get(position)).getAudio_content_url(), h3, mMediaPlayer);
+                        }
+                    }
+                });
                 h3.like.setColorFilter(R.color.black);
                 h3.unlike.setColorFilter(R.color.black);
                 h3.like.setOnClickListener(new View.OnClickListener() {
@@ -334,6 +373,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                     @Override
                     public void onClick(View view) {
                         //跳转
+                        ((IAudioFragment) back).showComment("声音", ((AudioEntity) list.get(position)).getAudio_id(), ((AudioEntity) list.get(position)).getUserIcon());
                     }
                 });
 
@@ -343,6 +383,20 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                         //跳转
                     }
                 });
+                break;
+
+            case "评论":
+                ((CommentViewHolder) holder).username.setText(((CommentEntity) list.get(position)).getUser().getUser_name());
+                ((CommentViewHolder) holder).comment_content.setText(((CommentEntity) list.get(position)).getComment_content());
+                ((CommentViewHolder) holder).comment_like_num.setText(((CommentEntity) list.get(position)).getComment_like_num());
+
+                if (!TextUtils.isEmpty(((CommentEntity) list.get(position)).getUser().getUser_icon())) {
+                    Log.d("Adapter", "评论: "+((CommentEntity) list.get(position)).getUser().getUser_icon());
+                    Picasso.with(context).load(((CommentEntity) list.get(position)).getUser().getUser_icon())
+                            .placeholder(R.drawable.wait)
+                            .error(R.drawable.wait)
+                            .into(((CommentViewHolder) holder).comment_userIcon);
+                }
                 break;
             default:
                 break;
@@ -381,9 +435,65 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
         return s_m + ":" + s_s;
     }
 
+    public void loadAudio(String audioURL, final AudioViewHolder h, final MediaPlayer mMediaPlayer) {
+        Log.d("Adapter", "loadAudio: "+audioURL);
+        h.audio_this_time.setVisibility(View.VISIBLE);
+        final Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                h.audio_this_time.setText(getTime(String.valueOf(msg.obj)));
+            }
+        };
+
+        final Timer mTimer = new Timer();
+        try {
+            mMediaPlayer.setDataSource(audioURL);
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(final MediaPlayer mediaPlayer) {
+                    mediaPlayer.start();
+                    h.seekBar.setMax(mediaPlayer.getDuration());
+                    h.audio_time.setText(getTime(String.valueOf(mediaPlayer.getDuration() / 1000)));
+
+                    TimerTask mTimerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            int crrunt = mediaPlayer.getCurrentPosition();
+                            h.seekBar.setProgress(crrunt);
+                            Message message = Message.obtain();
+                            message.obj = crrunt / 1000;
+                            handler.sendMessage(message);
+                        }
+                    };
+                    mTimer.schedule(mTimerTask, 0, 10);
+                }
+            });
+            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    mTimer.cancel();
+                    h.seekBar.setProgress(0);
+                    mediaPlayer.stop();
+                    mediaPlayer.seekTo(0);
+                    h.audio_this_time.setText("00:00");
+                    h.audio_this_time.setVisibility(View.INVISIBLE);
+                    h.play.setImageResource(R.drawable.play);
+                    h.play.setColorFilter(context.getResources().getColor(R.color.title));
+                }
+            });
+
+            mMediaPlayer.prepare();
+            mMediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void loadView(String path, final VideoView videoview, final SeekBar seekBar, final TextView thisTime, final TextView totalTime
-            , final ImageView img) {
+            , final ImageView img, final ImageView play) {
         final boolean[] isUserDo = {false};
+        thisTime.setVisibility(View.VISIBLE);
         Uri uri = Uri.parse(path);
         videoview.setVideoURI(uri);
 //        videoview.setMediaController(new MediaController(context));
@@ -399,7 +509,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (isUserDo[0]) {
-                    thisTime.setText(getTime(String.valueOf(i/1000)));
+                    thisTime.setText(getTime(String.valueOf(i / 1000)));
                 }
             }
 
@@ -413,7 +523,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int progress = seekBar.getProgress();
-                Log.d("Adapter", "onStopTrackingTouch: "+progress);
+                Log.d("Adapter", "onStopTrackingTouch: " + progress);
                 videoview.seekTo(seekBar.getProgress());
                 videoview.start();
                 isUserDo[0] = false;
@@ -446,9 +556,12 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                 timer.cancel();
                 videoview.seekTo(0);
                 seekBar.setProgress(0);
-                thisTime.setText("00:00");
                 videoview.setVisibility(View.INVISIBLE);
                 img.setVisibility(View.VISIBLE);
+                play.setImageResource(R.drawable.play);
+                play.setColorFilter(context.getResources().getColor(R.color.title));
+                thisTime.setText("00:00");
+                thisTime.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -529,7 +642,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
         private ImageView comment;
         private ImageView video_content_img;
         private VideoView videoView;
-        private FloatingActionButton play;
+        private ImageView play;
         private SeekBar video_seekbar;
         private TextView totalTime;
         private TextView thisTime;
@@ -571,6 +684,9 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
         private ImageView comment;
         private ImageView audio_content_img;
         private TextView audio_time;
+        private TextView audio_this_time;
+        private ImageView play;
+        private SeekBar seekBar;
 
 
         public AudioViewHolder(View itemView) {
@@ -584,10 +700,31 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
             audio_comment_num = itemView.findViewById(R.id.audio_comment_num);
             audio_content_img = itemView.findViewById(R.id.audio_content_img);
             audio_time = itemView.findViewById(R.id.audio_total_time);
+            audio_this_time = itemView.findViewById(R.id.audio_this_time);
+            play = itemView.findViewById(R.id.audio_play);
+            seekBar = itemView.findViewById(R.id.audio_seekbar);
 
             like = itemView.findViewById(R.id.audio_like);
             unlike = itemView.findViewById(R.id.audio_unlike);
             comment = itemView.findViewById(R.id.audio_comment);
+        }
+    }
+
+
+    class CommentViewHolder extends RecyclerView.ViewHolder {
+
+        private TextView username;
+        private CircleImageView comment_userIcon;
+        private TextView comment_content;
+        private TextView comment_like_num;
+
+
+        public CommentViewHolder(View itemView) {
+            super(itemView);
+            username = itemView.findViewById(R.id.comment_user);
+            comment_content = itemView.findViewById(R.id.comment_content);
+            comment_like_num = itemView.findViewById(R.id.comment_like_num);
+            comment_userIcon = itemView.findViewById(R.id.comment_icon);
         }
     }
 }

@@ -11,4 +11,5 @@ public interface IGetData {
     void getVideoData(String url, MyCallBack back);
     void getAudioData(String url, MyCallBack back);
     void getPictureData(String url, MyCallBack back);
+    void getCommentData(String url, MyCallBack back);
 }

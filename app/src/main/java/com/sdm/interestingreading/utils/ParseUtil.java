@@ -23,4 +23,18 @@ public class ParseUtil {
         }
         return data;
     }
+
+    public static String[] parseComment(String data){
+        String[] strings = new String[2];
+        try {
+            JSONObject jsonObject = new JSONObject(data);
+            String total = jsonObject.getString("total");
+            String theData = jsonObject.getString("data");
+            strings[0] = total;
+            strings[1] = theData;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return strings;
+    }
 }

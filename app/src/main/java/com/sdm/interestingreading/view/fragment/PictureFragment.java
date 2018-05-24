@@ -46,6 +46,8 @@ public class PictureFragment extends Fragment implements IPictureFragment{
     private static boolean isJumpToFirstShow = false;
     public static PictureDetailFragment fragment;
 
+    public static CommentFragment commentFragment;
+
     private int page = 1;
 
     private Handler handler = new Handler(){
@@ -187,6 +189,16 @@ public class PictureFragment extends Fragment implements IPictureFragment{
         MainActivity.mainLayout.setVisibility(View.GONE);
         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.frag_layout, fragment);
+        transaction.commit();
+    }
+
+    @Override
+    public void showComment(String which, String data_id, String usericon) {
+        commentFragment = CommentFragment.newInstance(which, data_id, usericon);
+        MainActivity.layout.setVisibility(View.VISIBLE);
+        MainActivity.mainLayout.setVisibility(View.GONE);
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.frag_layout, commentFragment);
         transaction.commit();
     }
 }
