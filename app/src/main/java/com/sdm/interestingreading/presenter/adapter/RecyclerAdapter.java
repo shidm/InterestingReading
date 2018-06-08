@@ -396,7 +396,8 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter {
                             .placeholder(R.drawable.wait)
                             .error(R.drawable.wait)
                             .into(((CommentViewHolder) holder).comment_userIcon);
-                }
+                } else
+                    ((CommentViewHolder) holder).comment_userIcon.setImageResource(R.drawable.user_icon);
                 break;
             default:
                 break;
